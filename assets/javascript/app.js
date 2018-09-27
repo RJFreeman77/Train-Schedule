@@ -9,6 +9,7 @@ var config = {
 firebase.initializeApp(config);
 moment().format();
 var database = firebase.database();
+var trainAry = [];
 
 var train = {
     name: "",
@@ -16,41 +17,49 @@ var train = {
     startTime: "",
     frequency: "",
     makeTr: function () {
-        var newTr = $("<tr>");
-        var nameTd = $("<td>");
-        var destTd = $("<td>");
-        var freqTd = $("<td>");
-        var nextArrTd = $("<td>");
-        var minAwayTd = $("<td>");
-        nameTd.text(this.name);
-        destTd.text(this.destination);
-        freqTd.text(this.frequency);
-        newTr.append(nameTd).append(destTd).append(freqTd);
+        var newTr = $("<tr>").append(
+            $("<td>").text(this.name),
+            $("<td>").text(this.destination),
+            $("<td>").text(this.frequency),
+        );
         $("#table-body").append(newTr);
-    }
+    },
 };
-var trainAry = [];
+
 
 $(document).ready(function () {
-    console.log(trainAry);
     $("#btn-submit").on("click", function (event) {
         event.preventDefault();
-        setNewTrain();
-        $(".form-group").val("");
+        pushNewTrain();
+        clearVals();
+    });
+
+    database.ref("trains").on("child_added", function (snapshot) {
+        var sv = snapshot.val();
+        var newTrain = train;
+        newTrain.name = sv.name;
+        newTrain.destination = sv.destination;
+        newTrain.startTime = sv.startTime;
+        newTrain.frequency = sv.frequency;
+        newTrain.makeTr();
+
     });
 
 });
 
-
-
-var setNewTrain = () => {
-    var newTrain = train;
-    newTrain.name = $("#name-input").val().trim();
-    newTrain.destination = $("#destination").val().trim();
-    newTrain.startTime = $("#first-train-time").val().trim();
-    newTrain.frequency = $("#frequency").val().trim();
-    console.log(newTrain);
-    newTrain.makeTr();
-    trainAry.push(newTrain);
-    console.log(trainAry);
+var pushNewTrain = () => {
+    database.ref("trains").push({
+        name: $("#name-input").val().trim(),
+        destination: $("#destination").val().trim(),
+        startTime: $("#first-train-time").val().trim(),
+        frequency: $("#frequency").val().trim(),
+        dateAdded: firebase.database.ServerValue.TIMESTAMP
+    });
 };
+
+var clearVals = () => {
+    $("#name-input").val("");
+    $("#destination").val("");
+    $("#first-train-time").val("");
+    $("#frequency").val("");
+}
