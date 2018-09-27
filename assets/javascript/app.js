@@ -10,7 +10,7 @@ firebase.initializeApp(config);
 var database = firebase.database();
 
 var now = moment().format();
-
+var intervalID;
 var trainAry = [];
 var train = {
     name: "",
@@ -42,12 +42,7 @@ var train = {
 
 $(document).ready(function () {
     $("#current-time").text(moment().format("hh:mm A"));
-    $("#btn-submit").on("click", function (event) {
-        event.preventDefault();
-        pushNewTrain();
-        clearVals();
-    });
-
+    startTimer();
     database.ref("trains").on("child_added", function (snapshot) {
         var sv = snapshot.val();
         var newTrain = train;
@@ -56,8 +51,30 @@ $(document).ready(function () {
         newTrain.startTime = sv.startTime;
         newTrain.frequency = sv.frequency;
         newTrain.makeTr();
-
+        trainAry.push(sv);
     });
+
+    $("#btn-submit").on("click", function (event) {
+        event.preventDefault();
+        pushNewTrain();
+        clearVals();
+        stopTimer();
+        startTimer();
+    });
+
+    // var intervalID = setInterval(function () {
+    //     console.log("intervalID", intervalID);
+    //     $("#current-time").text(moment().format("hh:mm A"));
+    //     $("#table-body").empty();
+    //     for (var i = 0; i < trainAry.length; i++) {
+    //         var tempTrain = train;
+    //         tempTrain.name = trainAry[i].name;
+    //         tempTrain.destination = trainAry[i].destination;
+    //         tempTrain.startTime = trainAry[i].startTime;
+    //         tempTrain.frequency = trainAry[i].frequency;
+    //         tempTrain.makeTr();
+    //     }
+    // }, 60000);
 
 });
 
@@ -77,3 +94,21 @@ var clearVals = () => {
     $("#first-train-time").val("");
     $("#frequency").val("");
 }
+var startTimer = () => {
+    intervalID = setInterval(function () {
+        console.log("interval going");
+        $("#current-time").text(moment().format("hh:mm A"));
+        $("#table-body").empty();
+        for (var i = 0; i < trainAry.length; i++) {
+            var tempTrain = train;
+            tempTrain.name = trainAry[i].name;
+            tempTrain.destination = trainAry[i].destination;
+            tempTrain.startTime = trainAry[i].startTime;
+            tempTrain.frequency = trainAry[i].frequency;
+            tempTrain.makeTr();
+        }
+    }, 1000);
+};
+var stopTimer = () => {
+    clearInterval(intervalID);
+};
