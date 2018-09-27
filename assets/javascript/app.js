@@ -7,27 +7,41 @@ var config = {
     messagingSenderId: "433102358836"
 };
 firebase.initializeApp(config);
-moment().format();
 var database = firebase.database();
-var trainAry = [];
 
+var now = moment().format();
+
+var trainAry = [];
 var train = {
     name: "",
     destination: "",
     startTime: "",
     frequency: "",
+    nextArrival: function () {
+        var parsedFreq = parseInt(this.frequency);
+        var startTimeConv = moment(this.startTime, "h:mm A").format("HH:mm");
+        var diffTime = moment().diff(moment(startTimeConv, "hh:mm A"), "minutes");
+        var tRemainder = diffTime % parsedFreq;
+        this.minAway = parsedFreq - tRemainder;
+        var nextTrain = moment().add(this.minAway, "minutes");
+        this.nextTrain = moment(nextTrain).format("hh:mm");
+    },
     makeTr: function () {
+        this.nextArrival();
         var newTr = $("<tr>").append(
             $("<td>").text(this.name),
             $("<td>").text(this.destination),
             $("<td>").text(this.frequency),
+            $("<td>").text(this.nextTrain),
+            $("<td>").text(this.minAway),
         );
         $("#table-body").append(newTr);
-    },
+    }
 };
 
 
 $(document).ready(function () {
+    $("#current-time").text(moment().format("hh:mm A"));
     $("#btn-submit").on("click", function (event) {
         event.preventDefault();
         pushNewTrain();
