@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Train Schedule</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
+        crossorigin="anonymous">
+    <link href="assets/css/style.css" rel="stylesheet">
+</head>
+
+<body>
+    <section class="container">
+        <div class="jumbotron bg-info text-center">
+            <h1 class="display-4">Fictional Train Schedule</h1>
+            <p>See the train schedule below. If you need to add a train, complete the form below.
+            </p>
+            <hr>
+            <p class="lead">Puns about monorails always make for decent one .... liners</p>
+        </div>
+        <section class="row">
+            <div class="col" id="display-table">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">Train Schedule</div>
+                    <div class="card-body">
+                        <table class="table table-striped table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Train Name</th>
+                                    <th>Destination</th>
+                                    <th>Frequency (min)</th>
+                                    <th>Next Arrival</th>
+                                    <th>Minutes Away</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-body">
+
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <section class="row">
+            <div class="col" id="input-form">
+                <div class="card-header bg-primary text-white">Enter New Train</div>
+                <div class="card">
+                    <div class="card-body">
+                        <form>
+                            <div class="form-group">
+                                <label for="name-input">Train Name</label>
+                                <input type="text" id="name-input" placeholder="Polar Express" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label for="destination">Destination</label>
+                                <input type="text" id="destination" placeholder="North Pole" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label for="first-train-time">First Train Time</label>
+                                <input type="time" id="first-train-time" data-format="HH:mm" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label for="frequency">Frequency (min)</label>
+                                <input type="number" id="frequency" placeholder="15" class="form-control">
+                            </div>
+                            <button type="button" class="btn btn-success" id="btn-submit">Submit</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </section>
+
+
+
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/moment.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+        crossorigin="anonymous"></script>
+    <script src="https://www.gstatic.com/firebasejs/5.5.1/firebase.js"></script>
+    <script type="text/javascript" src="assets/javascript/app.js"></script>
+</body>
+
+</html>
