@@ -1,3 +1,4 @@
+// Firebase config and initialization
 var config = {
     apiKey: "AIzaSyCOEaUaWKISRTdhOrtnOy0QAxcA-gQq7Po",
     authDomain: "trainschedule-dd6cb.firebaseapp.com",
@@ -8,50 +9,94 @@ var config = {
 };
 firebase.initializeApp(config);
 var database = firebase.database();
-
-var now = moment().format();
+// Declaring general global variables.
 var intervalID;
 var trainAry = [];
+// train objects.
 var train = {
     name: "",
     destination: "",
     startTime: "",
     frequency: "",
-    nextArrival: function () {
-        var parsedFreq = parseInt(this.frequency);
-        var startTimeConv = moment(this.startTime, "h:mm A").format("HH:mm");
+    minAway: "",
+    nextTrain: ""
+};
+var setTrain = {
+    nextArrival: function (trainParam) {
+        // method to calculate the arrival time of the next train, and how many minutes away it is.
+        var parsedFreq = parseInt(trainParam.frequency);
+        var startTimeConv = moment(trainParam.startTime, "h:mm A").format("HH:mm");
         var diffTime = moment().diff(moment(startTimeConv, "hh:mm A"), "minutes");
         var tRemainder = diffTime % parsedFreq;
-        this.minAway = parsedFreq - tRemainder;
-        var nextTrain = moment().add(this.minAway, "minutes");
-        this.nextTrain = moment(nextTrain).format("hh:mm");
+        trainParam.minAway = parsedFreq - tRemainder;
+        var nextTrain = moment().add(trainParam.minAway, "minutes");
+        trainParam.nextTrain = moment(nextTrain).format("hh:mm A");
+        return trainParam;
     },
-    makeTr: function () {
-        this.nextArrival();
+    // method to populate the train schedule on the DOM.
+    makeRow: function (trainParam) {
+        var newTrain = this.nextArrival(trainParam);
         var newTr = $("<tr>").append(
-            $("<td>").text(this.name),
-            $("<td>").text(this.destination),
-            $("<td>").text(this.frequency),
-            $("<td>").text(this.nextTrain),
-            $("<td>").text(this.minAway),
+            $("<td>").text(newTrain.name),
+            $("<td>").text(newTrain.destination),
+            $("<td>").text(newTrain.frequency),
+            $("<td>").text(newTrain.nextTrain),
+            $("<td>").text(newTrain.minAway),
         );
         $("#table-body").append(newTr);
     }
 };
 
-
+// function to push new train to database. 
+var pushNewTrain = () => {
+    database.ref("trains").push({
+        name: $("#name-input").val().trim(),
+        destination: $("#destination").val().trim(),
+        startTime: $("#first-train-time").val().trim(),
+        frequency: $("#frequency").val().trim(),
+        minAway: "",
+        nextTrain: "",
+        dateAdded: firebase.database.ServerValue.TIMESTAMP
+    });
+};
+// function to clear out the train form. 
+var clearVals = () => {
+    $("#name-input").val("");
+    $("#destination").val("");
+    $("#first-train-time").val("");
+    $("#frequency").val("");
+}
+// timer functions to update the train schedule every 15 seconds. 
+var startTimer = () => {
+    intervalID = setInterval(function () {
+        console.log("interval going");
+        $("#current-time").text(moment().format("hh:mm A"));
+        $("#table-body").empty();
+        for (var i = 0; i < trainAry.length; i++) {
+            setTrain.makeRow(trainAry[i]);
+        }
+    }, 15000);
+};
+var stopTimer = () => {
+    clearInterval(intervalID);
+};
+// document ready function
 $(document).ready(function () {
+    // displaying the current time in the Jumbotron.
     $("#current-time").text(moment().format("hh:mm A"));
+    // starting timer
     startTimer();
+    // firebase function to pull information from the database. triggered when a child is added to the database. 
     database.ref("trains").on("child_added", function (snapshot) {
         var sv = snapshot.val();
-        var newTrain = train;
+        var newTrain = { ...train };
         newTrain.name = sv.name;
         newTrain.destination = sv.destination;
         newTrain.startTime = sv.startTime;
         newTrain.frequency = sv.frequency;
-        newTrain.makeTr();
-        trainAry.push(sv);
+        setTrain.makeRow(newTrain);
+        // pushing to an array so that I can update the schedule every 15 seconds
+        trainAry.push(newTrain);
     });
 
     $("#btn-submit").on("click", function (event) {
@@ -61,54 +106,4 @@ $(document).ready(function () {
         stopTimer();
         startTimer();
     });
-
-    // var intervalID = setInterval(function () {
-    //     console.log("intervalID", intervalID);
-    //     $("#current-time").text(moment().format("hh:mm A"));
-    //     $("#table-body").empty();
-    //     for (var i = 0; i < trainAry.length; i++) {
-    //         var tempTrain = train;
-    //         tempTrain.name = trainAry[i].name;
-    //         tempTrain.destination = trainAry[i].destination;
-    //         tempTrain.startTime = trainAry[i].startTime;
-    //         tempTrain.frequency = trainAry[i].frequency;
-    //         tempTrain.makeTr();
-    //     }
-    // }, 60000);
-
 });
-
-var pushNewTrain = () => {
-    database.ref("trains").push({
-        name: $("#name-input").val().trim(),
-        destination: $("#destination").val().trim(),
-        startTime: $("#first-train-time").val().trim(),
-        frequency: $("#frequency").val().trim(),
-        dateAdded: firebase.database.ServerValue.TIMESTAMP
-    });
-};
-
-var clearVals = () => {
-    $("#name-input").val("");
-    $("#destination").val("");
-    $("#first-train-time").val("");
-    $("#frequency").val("");
-}
-var startTimer = () => {
-    intervalID = setInterval(function () {
-        console.log("interval going");
-        $("#current-time").text(moment().format("hh:mm A"));
-        $("#table-body").empty();
-        for (var i = 0; i < trainAry.length; i++) {
-            var tempTrain = train;
-            tempTrain.name = trainAry[i].name;
-            tempTrain.destination = trainAry[i].destination;
-            tempTrain.startTime = trainAry[i].startTime;
-            tempTrain.frequency = trainAry[i].frequency;
-            tempTrain.makeTr();
-        }
-    }, 1000);
-};
-var stopTimer = () => {
-    clearInterval(intervalID);
-};
